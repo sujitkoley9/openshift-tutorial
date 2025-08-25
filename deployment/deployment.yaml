@@ -1,0 +1,95 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: build-and-deploy
+spec:
+  workspaces:
+    - name: code-workspace
+    - name: git-auth  # Workspace for Git authentication
+  params:
+    - name: git-url
+      type: string
+    - name: git-revision
+      type: string
+      default: main
+    - name: git-token-secret
+      type: string
+      default: git-token-secret  # Default secret name
+    - name: cicd-demo-backend-image
+      type: string
+      description: image to be built from backend code
+    
+  tasks:
+    #-------------------------fetch repository-----------------------------------------------#
+    - name: fetch-repository 
+      taskRef:
+        resolver: cluster
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: git-clone
+          - name: namespace
+            value: sujitkoley99-dev
+      workspaces:
+        - name: output
+          workspace: code-workspace
+        - name: basic-auth
+          workspace: git-auth   # Use workspace for Git authentication
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: revision
+          value: "$(params.git-revision)"
+        - name: subdirectory
+          value: ""
+        - name: deleteExisting
+          value: "true"
+        - name: depth           
+          value: "2"   # Fetch last 2 commits so HEAD~1 works
+
+    
+    #------------------------------------------------------------------------------------------------#
+    #------------------------- cicd-demo backend ----------------------------------------------------#
+    #------------------------------------------------------------------------------------------------#
+
+    #1: ----------------------  build cicd-demo-backend image--------------------------#
+    - name: build-cicd-demo-backend
+      taskRef:
+        resolver: cluster
+        params:
+        - name: kind
+          value: task
+        - name: name
+          value: buildah
+        - name: namespace
+          value: sujitkoley99-dev
+      workspaces:
+      - name: source
+        workspace: code-workspace
+      params:
+      - name: IMAGE
+        value: $(params.cicd-demo-backend-image)
+      - name: DOCKERFILE
+        value: ./Dockerfile      
+      runAfter:
+      - fetch-repository
+    #2: ------------------------ deploy cicd-demo-backend application ------------------------#
+    - name: deploy-cicd-demo-backend
+      taskSpec:
+        workspaces:
+          - name: source
+        steps:
+          - name: deploy
+            image: quay.io/openshift/origin-cli:latest
+            script: |
+              #!/bin/sh
+              oc apply -f $(workspaces.source.path)/deployment/deployment.yaml
+              oc rollout restart deployment/cicd-demo-backend
+      workspaces:
+      - name: source
+        workspace: code-workspace
+      runAfter:
+      - build-cicd-demo-backend
+
+    
