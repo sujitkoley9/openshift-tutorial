@@ -1,2 +1,2 @@
 
-OpenShift tutorial1
+OpenShift tutorial
