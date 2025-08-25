@@ -1,0 +1,32 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: cicd-demo-backend-pipeline-run-
+  annotations:
+    pipelinesascode.tekton.dev/on-event: "push"
+    pipelinesascode.tekton.dev/on-target-branch: "main"
+    pipelinesascode.tekton.dev/pipeline-namespace: "sujitkoley99-dev"
+    # How many runs we want to keep attached to this event
+    pipelinesascode.tekton.dev/max-keep-runs: "3" 
+spec:
+  pipelineRef:
+    name: build-and-deploy
+  workspaces:
+    - name: code-workspace
+      persistentVolumeClaim:
+        claimName: cicd-demo-backend-pipeline-pvc
+      subPath: dev
+    - name: git-auth   # Mounts .git-credentials & .gitconfig
+      secret:
+        secretName: git-token-secret
+
+  
+  params:
+    - name: git-url
+      value: "{{ repo_url }}"
+    - name: git-revision
+      value: "{{ revision }}"
+    - name: repo-name
+      value: "{{ repo_name }}"
+    - name: cicd-demo-backend-image
+      value: "image-registry.openshift-image-registry.svc:5000/sujitkoley99-dev/cicd-demo-backend:latest" # repo name
