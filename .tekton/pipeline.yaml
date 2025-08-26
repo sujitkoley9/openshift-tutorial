@@ -56,7 +56,14 @@ spec:
     #1: ----------------------  build cicd-demo-backend image--------------------------#
     - name: build-cicd-demo-backend
       taskRef:
-         name: buildah
+        resolver: cluster
+        params:
+        - name: kind
+          value: task
+        - name: name
+          value: buildah
+        - name: namespace
+          value: sujitkoley99-dev
       workspaces:
       - name: source
         workspace: code-workspace
