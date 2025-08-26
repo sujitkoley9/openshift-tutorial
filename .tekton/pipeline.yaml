@@ -61,7 +61,7 @@ spec:
         - name: kind
           value: task
         - name: name
-          value: buildah
+          value: kaniko
         - name: namespace
           value: sujitkoley99-dev
       workspaces:
