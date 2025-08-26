@@ -9,6 +9,7 @@ metadata:
     # How many runs we want to keep attached to this event
     pipelinesascode.tekton.dev/max-keep-runs: "3" 
 spec:
+  serviceAccountName: kaniko-sa
   pipelineRef:
     name: build-and-deploy
   workspaces:
