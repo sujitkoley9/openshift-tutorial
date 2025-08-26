@@ -56,22 +56,13 @@ spec:
     #1: ----------------------  build cicd-demo-backend image--------------------------#
     - name: build-cicd-demo-backend
       taskRef:
-        resolver: cluster
-        params:
-        - name: kind
-          value: task
-        - name: name
-          value: buildah
-        - name: namespace
-          value: sujitkoley99-dev
+         name: buildah
       workspaces:
       - name: source
         workspace: code-workspace
       params:
       - name: IMAGE
         value: $(params.cicd-demo-backend-image)
-      - name: TLSVERIFY
-        value: 'false'
       - name: DOCKERFILE
         value: ./Dockerfile      
       runAfter:
