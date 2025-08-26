@@ -61,7 +61,7 @@ spec:
         - name: kind
           value: task
         - name: name
-          value: kaniko
+          value: buildah
         - name: namespace
           value: sujitkoley99-dev
       workspaces:
@@ -70,6 +70,8 @@ spec:
       params:
       - name: IMAGE
         value: $(params.cicd-demo-backend-image)
+      - name: TLSVERIFY
+        value: 'false'
       - name: DOCKERFILE
         value: ./Dockerfile      
       runAfter:
